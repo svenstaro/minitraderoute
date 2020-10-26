@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 bevy = "0.2"
+bevy_prototype_lyon = "0.1.2"
