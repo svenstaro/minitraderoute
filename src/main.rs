@@ -2,6 +2,8 @@ use std::{sync::mpsc::channel, thread};
 
 use anyhow::{Context, Result};
 
+use rayon::prelude::*;
+
 use audio::AudioEvent;
 use pixels::{Pixels, SurfaceTexture};
 use winit::{
@@ -14,11 +16,12 @@ use winit_input_helper::WinitInputHelper;
 
 use shipyard::*;
 
-mod audio;
+use rand::{Rng, RngCore};
 
-use rand::Rng;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoroshiro128StarStar;
+
+mod audio;
 
 const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 800;
@@ -30,11 +33,45 @@ struct Position {
     y: u32,
 }
 
-struct Drawable {
+struct Drawable {}
+
+fn setup_world() -> World {
+    let world = World::new();
+
+    world.run(
+        |mut entities: EntitiesViewMut,
+         mut positions: ViewMut<Position>,
+         mut drawables: ViewMut<Drawable>| {
+            entities.add_entity(
+                (&mut positions, &mut drawables),
+                (Position { x: 30, y: 30 }, Drawable {}),
+            );
+        },
+    );
+
+    world
+}
+
+fn draw_system(frame: &mut [u8], positions: View<Position>, drawables: View<Drawable>) {
+    frame
+        .par_chunks_exact_mut(4)
+        .into_par_iter()
+        .enumerate()
+        .for_each(|(i, pixel)| {
+            let x = (i % GAME_WIDTH as usize) as i16;
+            let y = (i / GAME_WIDTH as usize) as i16;
+
+            pixel[0] = 0x00;
+            pixel[1] = 0x00;
+            pixel[2] = 0x00;
+            pixel[3] = 0xff;
+        });
 }
 
 fn main() -> Result<()> {
     let mut rng = Xoroshiro128StarStar::seed_from_u64(1337);
+
+    let world = setup_world();
 
     let event_loop = EventLoop::new();
     let mut input = WinitInputHelper::new();
@@ -65,12 +102,8 @@ fn main() -> Result<()> {
     event_loop.run(move |event, _, control_flow| {
         if let Event::RedrawRequested(_) = event {
             let frame = pixels.get_frame();
-            for pixel in frame.chunks_exact_mut(4) {
-                pixel[0] = 0x00;
-                pixel[1] = rng.gen();
-                pixel[2] = 0x00;
-                pixel[3] = 0xff;
-            }
+            world.run_with_data(draw_system, frame);
+
             if pixels
                 .render()
                 .map_err(|e| eprintln!("pixels.render() failed: {}", e))
