@@ -13,7 +13,8 @@ pub fn start(recv: Receiver<AudioEvent>) {
     let (_stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
     let sink = rodio::Sink::try_new(&stream_handle).unwrap();
 
-    let bass_jab = sound::Sound::load("assets/bass_jab.wav").unwrap();
+    let bass_jab = 
+        sound::Sound::load(&include_bytes!("../../assets/bass_jab.wav")[..]);
 
     loop {
         let msg = recv.recv().unwrap();
