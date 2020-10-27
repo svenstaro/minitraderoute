@@ -59,7 +59,6 @@ fn main() -> Result<()> {
             .build(&event_loop)
             .unwrap()
     };
-    // snd_send.send(AudioEvent::Bass).unwrap();
 
     // Initialize the shipyard world
     let world = setup_world();

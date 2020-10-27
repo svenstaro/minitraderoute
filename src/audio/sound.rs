@@ -1,8 +1,8 @@
 use rodio;
-use std::{sync::Arc, io};
 use std::convert::AsRef;
+use std::{io, sync::Arc};
 
-pub struct Sound (Arc<&'static [u8]>);
+pub struct Sound(Arc<&'static [u8]>);
 
 impl AsRef<[u8]> for Sound {
     fn as_ref(&self) -> &[u8] {
