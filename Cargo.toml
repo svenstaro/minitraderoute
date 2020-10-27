@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1"
+log = "0.4"
 pixels = { version = "0.2" }
 raqote = { version = "0.8" }
 winit = "0.23"
@@ -16,6 +17,8 @@ rand = "0.7"
 rand_xoshiro = "0.4"
 # shipyard = "0.4"
 shipyard = { git = "https://github.com/leudz/shipyard.git" }
+simplelog = { version = "0.8", default-features = false }
+structopt = "0.3"
 rayon = "1.5"
 rodio = "0.12.0"
 

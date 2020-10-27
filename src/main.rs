@@ -18,10 +18,12 @@ use winit::{
 use winit_input_helper::WinitInputHelper;
 
 mod audio;
+mod cli;
 mod components;
 mod systems;
 mod world;
 
+use cli::parse_cli;
 use components::*;
 use systems::*;
 use world::*;
@@ -33,6 +35,8 @@ const GAME_HEIGTH: u32 = 100;
 
 fn main() -> Result<()> {
     //let mut rng = Xoroshiro128StarStar::seed_from_u64(1337);
+
+    parse_cli();
 
     // Init audio channels and spawn the audio thread
     let (_snd_send, snd_recv) = channel();
