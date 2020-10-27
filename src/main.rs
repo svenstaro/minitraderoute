@@ -1,5 +1,7 @@
 use std::{sync::mpsc::channel, thread};
 
+use raqote::*;
+
 use anyhow::{Context, Result};
 
 use rayon::prelude::*;
@@ -17,7 +19,6 @@ use winit_input_helper::WinitInputHelper;
 use shipyard::*;
 
 use rand::{Rng, RngCore};
-
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoroshiro128StarStar;
 
@@ -33,10 +34,23 @@ struct Position {
     y: u32,
 }
 
-struct Drawable {}
+struct Drawable {
+    width: u32,
+    height: u32,
+    image_data: Vec<u32>,
+}
 
-fn setup_world() -> World {
-    let world = World::new();
+fn add_planet(world: &mut World, position: (u32, u32)) {
+    let width = 20u32;
+    let height = 20u32;
+
+    let mut dt = DrawTarget::new(width as i32, height as i32);
+    let mut pb = PathBuilder::new();
+    pb.arc(160., 190., 180., 0., 2. * 3.14159);
+    pb.close();
+    let path = pb.finish();
+    dt.push_clip(&path);
+    let image_data = dt.into_vec();
 
     world.run(
         |mut entities: EntitiesViewMut,
@@ -44,10 +58,16 @@ fn setup_world() -> World {
          mut drawables: ViewMut<Drawable>| {
             entities.add_entity(
                 (&mut positions, &mut drawables),
-                (Position { x: 30, y: 30 }, Drawable {}),
+                (Position { x: position.0, y: position.1 }, Drawable { width, height, image_data }),
             );
         },
     );
+}
+
+fn setup_world() -> World {
+    let mut world = World::new();
+
+    add_planet(&mut world, (30, 30));
 
     world
 }
@@ -61,6 +81,7 @@ fn draw_system(frame: &mut [u8], positions: View<Position>, drawables: View<Draw
             let x = (i % GAME_WIDTH as usize) as i16;
             let y = (i / GAME_WIDTH as usize) as i16;
 
+            // TODO Actually draw drawables here
             pixel[0] = 0x00;
             pixel[1] = 0x00;
             pixel[2] = 0x00;
