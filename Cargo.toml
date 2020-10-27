@@ -14,7 +14,9 @@ winit = "0.23"
 winit_input_helper = "0.8"
 rand = "0.7"
 rand_xoshiro = "0.4"
-shipyard = "0.4"
+# shipyard = "0.4"
+shipyard = { git = "https://github.com/leudz/shipyard.git" }
+rayon = "1.5"
 
 [patch.crates-io]
 pixels = { git = "https://github.com/svenstaro/pixels.git", branch = "fix-outofdate-swapchain" }
