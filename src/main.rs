@@ -1,5 +1,8 @@
+use std::{sync::mpsc::channel, thread};
+
 use anyhow::{Context, Result};
 
+use audio::AudioEvent;
 use pixels::{Pixels, SurfaceTexture};
 use winit::{
     dpi::{LogicalSize, PhysicalSize},
@@ -10,6 +13,8 @@ use winit::{
 use winit_input_helper::WinitInputHelper;
 
 use shipyard::*;
+
+mod audio;
 
 use rand::Rng;
 use rand_xoshiro::rand_core::SeedableRng;
@@ -42,6 +47,14 @@ fn main() -> Result<()> {
             .build(&event_loop)
             .unwrap()
     };
+
+    let (snd_send, snd_recv) = channel();
+
+    thread::spawn(move || {
+        audio::start(snd_recv);
+    });
+
+    snd_send.send(AudioEvent::Bass).unwrap();
 
     let mut pixels = {
         let window_size = window.inner_size();
