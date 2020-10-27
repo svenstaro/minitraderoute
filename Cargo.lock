@@ -1655,8 +1655,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 [[package]]
 name = "pixels"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd1cc9703dcfee8549997d4b60a5c767f759c5f83844b302ca90959e4b2bdad8"
+source = "git+https://github.com/svenstaro/pixels.git?branch=fix-outofdate-swapchain#b8b4fee8493a0d63d48f7dbc10032736022de677"
 dependencies = [
  "pollster",
  "raw-window-handle",
