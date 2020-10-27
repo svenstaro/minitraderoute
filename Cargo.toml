@@ -17,6 +17,7 @@ rand_xoshiro = "0.4"
 # shipyard = "0.4"
 shipyard = { git = "https://github.com/leudz/shipyard.git" }
 rayon = "1.5"
+rodio = "0.12.0"
 
 [patch.crates-io]
 pixels = { git = "https://github.com/svenstaro/pixels.git", branch = "fix-outofdate-swapchain" }

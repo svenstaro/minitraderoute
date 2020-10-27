@@ -1,7 +1,10 @@
+use std::{sync::mpsc::channel, thread};
+
 use anyhow::{Context, Result};
 
 use rayon::prelude::*;
 
+use audio::AudioEvent;
 use pixels::{Pixels, SurfaceTexture};
 use winit::{
     dpi::{LogicalSize, PhysicalSize},
@@ -14,8 +17,11 @@ use winit_input_helper::WinitInputHelper;
 use shipyard::*;
 
 use rand::{Rng, RngCore};
+
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoroshiro128StarStar;
+
+mod audio;
 
 const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 800;
@@ -78,6 +84,14 @@ fn main() -> Result<()> {
             .build(&event_loop)
             .unwrap()
     };
+
+    let (snd_send, snd_recv) = channel();
+
+    thread::spawn(move || {
+        audio::start(snd_recv);
+    });
+
+    snd_send.send(AudioEvent::Bass).unwrap();
 
     let mut pixels = {
         let window_size = window.inner_size();
