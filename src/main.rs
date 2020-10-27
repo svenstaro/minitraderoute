@@ -54,7 +54,7 @@ fn main() -> Result<()> {
         audio::start(snd_recv);
     });
 
-    snd_send.send(AudioEvent::Bass).unwrap();
+    // snd_send.send(AudioEvent::Bass).unwrap();
 
     let mut pixels = {
         let window_size = window.inner_size();
