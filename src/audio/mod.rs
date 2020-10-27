@@ -1,6 +1,6 @@
 use log::debug;
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink, Source};
-use std::io::BufReader;
+use std::{io::BufReader, collections::HashSet};
 use std::{
     cmp::min,
     fs::File,
@@ -18,15 +18,11 @@ const NANOS_PER_MINUTE: u64 = 1_000_000 * 1000 * 60;
 
 const NANOS_PER_BEAT: u64 = NANOS_PER_MINUTE / 120;
 
-const NANOS_PER_TICK: u64 = NANOS_PER_BEAT / 16;
+const NANOS_PER_TICK: u64 = NANOS_PER_BEAT / 4;
 
 pub enum AudioEvent {
-    Bass,
-    Kick,
-}
-
-struct Pattern {
-    note_slots: Vec<u8>,
+    NewStation,
+    ShipArrived
 }
 
 pub fn start(recv: Receiver<AudioEvent>) {
@@ -42,37 +38,19 @@ pub fn start(recv: Receiver<AudioEvent>) {
     let mut current_bar = 0;
 
     loop {
-        wait_for_tick(start_time);
-        let msg = recv.try_recv();
-        match msg {
-            Ok(AudioEvent::Bass) => {
-                stream_handle
-                    .play_raw(bass_jab.decoder().convert_samples())
-                    .unwrap();
-            }
-            _ => {}
-        }
+        let msg = recv.recv().unwrap();
+        let sound = match msg {
+            AudioEvent::NewStation => &bass_jab,
+            AudioEvent::ShipArrived => &blip
+        };
 
-        if current_note == 0 {
-            stream_handle
-                .play_raw(kick.decoder().convert_samples())
-                .unwrap();
-        }
+        let src = sound.decoder().delay(time_until_tick(start_time));
 
-        if current_note == 8 {
-            stream_handle
-                .play_raw(bass_jab.decoder().convert_samples())
-                .unwrap()
-        }
+        // let queue = [HashSet::<AudioEvent>::new(); 8];
 
-        if current_beat == 3 && current_note == 8 {
-            let source = blip
-                .decoder()
-                .buffered()
-                .reverb(Duration::from_nanos(NANOS_PER_TICK * 2), 0.1);
-
-            stream_handle.play_raw(source.convert_samples()).unwrap();
-        }
+        stream_handle
+            .play_raw(src.convert_samples())
+            .unwrap();
 
         current_note = (current_note + 1) % 16;
         if current_note == 0 {
@@ -85,8 +63,10 @@ pub fn start(recv: Receiver<AudioEvent>) {
     }
 }
 
-fn wait_for_tick(start_time: Instant) {
-    let since_start: u64 = Instant::now().duration_since(start_time).as_nanos() as u64;
+fn time_until_tick(start_time: Instant) -> Duration {
+    let since_start: u64 = Instant::now()
+        .duration_since(start_time)
+        .as_nanos() as u64;
     let since_last_tick: u64 = since_start % NANOS_PER_TICK;
     let until_next_tick = NANOS_PER_TICK - since_last_tick;
 
@@ -94,5 +74,5 @@ fn wait_for_tick(start_time: Instant) {
     debug!("{:>8} until next tick", until_next_tick / 1000);
     debug!("");
 
-    thread::sleep(Duration::from_nanos(until_next_tick));
+    return Duration::from_nanos(until_next_tick);
 }
