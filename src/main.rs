@@ -9,14 +9,13 @@ enum ResourceType {
 struct Planet;
 struct Ship;
 struct Station;
-struct Resource(ResourceType);
-struct Position(Vec2);
 
 fn main() {
     App::build()
         .add_default_plugins()
         .add_startup_system(setup.system())
         .add_system(game_exit_system.system())
+        .add_system(ship_movement_system.system())
         .run();
 }
 
@@ -26,6 +25,13 @@ fn game_exit_system(
 ) {
     if keyboard_input.pressed(KeyCode::Escape) {
         app_exit_events.send(AppExit);
+    }
+}
+
+fn ship_movement_system(time: Res<Time>, mut ship_query: Query<(&Ship, &mut Transform)>) {
+    let direction = Vec3::new(0.5, 0.5, 0.0).normalize();
+    for (ship, mut transform) in &mut ship_query.iter() {
+        transform.translate(100.0 * direction * time.delta_seconds);
     }
 }
 
@@ -43,21 +49,13 @@ fn setup(
         .spawn(primitive(
             blue,
             &mut meshes,
-            ShapeType::Circle(100.0),
+            ShapeType::RoundedRectangle {
+                width: 100.0,
+                height: 100.0,
+                border_radius: 20.0,
+            },
             TessellationMode::Fill(&FillOptions::default()),
             Vec3::new(200.0, 0.0, 0.0).into(),
         ))
-        .with(Planet)
-        .with(Position(Vec2::new(50.0, 50.0)))
-        .spawn((
-            Planet,
-            Position(Vec2::new(50.0, 50.0)),
-            primitive(
-                red,
-                &mut meshes,
-                ShapeType::Circle(10.0),
-                TessellationMode::Fill(&FillOptions::default()),
-                Vec3::new(2.0, 0.0, 0.0).into(),
-            ),
-        ));
+        .with(Ship);
 }
