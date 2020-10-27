@@ -1,22 +1,21 @@
+use raqote::*;
 use rayon::prelude::*;
 use shipyard::*;
 
 use crate::components::*;
-use crate::GAME_WIDTH;
+use crate::{GAME_HEIGTH, GAME_WIDTH};
 
-pub fn draw_system(frame: &mut [u8], _positions: View<Position>, _drawables: View<Drawable>) {
-    frame
-        .par_chunks_exact_mut(4)
-        .into_par_iter()
-        .enumerate()
-        .for_each(|(i, pixel)| {
-            let _x = (i % GAME_WIDTH as usize) as i16;
-            let _y = (i / GAME_WIDTH as usize) as i16;
-
-            // TODO Actually draw drawables here
-            pixel[0] = 0x00;
-            pixel[1] = 0x00;
-            pixel[2] = 0x00;
-            pixel[3] = 0xff;
-        });
+pub fn draw_system(
+    draw_target: &mut DrawTarget,
+    _positions: View<Position>,
+    drawables: View<Drawable>,
+) {
+    for drawable in drawables.iter() {
+        draw_target.push_clip(&drawable.path);
+        draw_target.fill(
+            &drawable.path,
+            &SolidSource::from_unpremultiplied_argb(0, 255, 20, 20).into(),
+            &DrawOptions::new(),
+        )
+    }
 }

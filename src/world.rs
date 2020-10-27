@@ -2,6 +2,7 @@ use raqote::*;
 use shipyard::*;
 
 use crate::components::*;
+use crate::{GAME_HEIGTH, GAME_WIDTH};
 
 /// Create the shipyard world.
 /// This also does basic world initialization and entity creation.
@@ -17,13 +18,9 @@ fn add_planet(world: &mut World, position: (u32, u32)) {
     let width = 20u32;
     let height = 20u32;
 
-    let mut dt = DrawTarget::new(width as i32, height as i32);
     let mut pb = PathBuilder::new();
     pb.arc(160., 190., 180., 0., 2. * 3.14159);
     pb.close();
-    let path = pb.finish();
-    dt.push_clip(&path);
-    let image_data = dt.into_vec();
 
     world.run(
         |mut entities: EntitiesViewMut,
@@ -39,7 +36,7 @@ fn add_planet(world: &mut World, position: (u32, u32)) {
                     Drawable {
                         width,
                         height,
-                        image_data,
+                        path: pb.finish(),
                     },
                 ),
             );
