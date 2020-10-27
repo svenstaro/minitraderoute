@@ -9,6 +9,8 @@ use winit::{
 };
 use winit_input_helper::WinitInputHelper;
 
+use shipyard::*;
+
 use rand::Rng;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoroshiro128StarStar;
@@ -17,6 +19,14 @@ const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 800;
 const GAME_WIDTH: u32 = 100;
 const GAME_HEIGTH: u32 = 100;
+
+struct Position {
+    x: u32,
+    y: u32,
+}
+
+struct Drawable {
+}
 
 fn main() -> Result<()> {
     let mut rng = Xoroshiro128StarStar::seed_from_u64(1337);
@@ -39,22 +49,13 @@ fn main() -> Result<()> {
         Pixels::new(GAME_WIDTH, GAME_HEIGTH, surface_texture)?
     };
 
-    let mut resize_count = 0;
-
     event_loop.run(move |event, _, control_flow| {
         if let Event::RedrawRequested(_) = event {
-            if resize_count > 0 {
-                let size = window.inner_size();
-                pixels.resize(size.width, size.height);
-                resize_count -= 1;
-                dbg!(resize_count);
-            }
-
             let frame = pixels.get_frame();
             for pixel in frame.chunks_exact_mut(4) {
-                pixel[0] = rng.gen();
+                pixel[0] = 0x00;
                 pixel[1] = rng.gen();
-                pixel[2] = rng.gen();
+                pixel[2] = 0x00;
                 pixel[3] = 0xff;
             }
             if pixels
@@ -74,9 +75,6 @@ fn main() -> Result<()> {
             }
 
             if let Some(size) = input.window_resized() {
-                // Resize many times to work around this bug: https://github.com/parasyte/pixels/issues/121
-                // Yes, it's stupid, but it works.
-                resize_count = 100;
                 pixels.resize(size.width, size.height);
             }
 

@@ -16,6 +16,9 @@ rand = "0.7"
 rand_xoshiro = "0.4"
 shipyard = "0.4"
 
+[patch.crates-io]
+pixels = { git = "https://github.com/svenstaro/pixels.git", branch = "fix-outofdate-swapchain" }
+
 [profile.release]
 # lto = true
 # codegen-units = 1
